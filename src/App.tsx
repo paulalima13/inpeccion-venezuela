@@ -853,18 +853,12 @@ export default function App() {
                     Siguiente
                   </button>
                 ) : (
-                  <div style={{ flex: 2, display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                    <button onClick={enviar} disabled={enviando || !form.inspector || !form.tipo_edificacion || !form.veredicto}
-                      style={{ width: "100%", background: form.veredicto ? (VC[form.veredicto] || BLUE) : INPUT, border: "none", borderRadius: 10, color: form.veredicto ? "#fff" : MUTED, padding: "14px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
-                      {enviando ? "Guardando..." : "Guardar inspeccion"}
-                    </button>
-                    {form.veredicto && form.inspector && (
-                      <button onClick={() => generarPDF(form, form.veredicto)}
-                        style={{ width: "100%", background: INPUT, border: `1px solid ${BORDER}`, borderRadius: 10, color: BLUE, padding: "12px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                        Generar PDF / Imprimir
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    onClick={async () => { await enviar(); if (form.veredicto && form.inspector) generarPDF(form, form.veredicto); }}
+                    disabled={enviando || !form.inspector || !form.tipo_edificacion || !form.veredicto}
+                    style={{ flex: 2, background: form.veredicto ? (VC[form.veredicto] || BLUE) : INPUT, border: "none", borderRadius: 10, color: form.veredicto ? "#fff" : MUTED, padding: "14px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                    {enviando ? "Guardando y generando PDF..." : "Guardar y generar PDF"}
+                  </button>
                 )}
               </div>
             </>
