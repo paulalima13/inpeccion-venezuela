@@ -1109,6 +1109,7 @@ export default function App() {
           </div>
         </div>
       )}
+      )}
       {/* Terms modal */}
       {mostrarTerminos && (
         <>
