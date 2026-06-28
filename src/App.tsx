@@ -974,25 +974,6 @@ export default function App() {
 
 
       {tab === "mapa" && (
-        !accesoDatos ? (
-          <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 32 }}>
-
-            <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-              <input
-                type="password"
-                value={passwordInput}
-                onChange={e => { setPasswordInput(e.target.value); setPasswordError(false); }}
-                onKeyDown={e => e.key === "Enter" && verificarPassword()}
-                placeholder=""
-                style={{ background: INPUT, border: `1px solid ${passwordError ? "#ef4444" : BORDER}`, borderRadius: 8, color: TEXT, padding: "12px", fontSize: 15, outline: "none" }}
-              />
-              <button onClick={verificarPassword}
-                style={{ background: BLUE, border: "none", borderRadius: 8, color: "#fff", padding: "12px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-                Acceder
-              </button>
-            </div>
-          </div>
-        ) : (
         <div style={{ display: "flex", flexDirection: "column" as const, gap: 12 }}>
           {/* Stats bar */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
@@ -1018,25 +999,19 @@ export default function App() {
               <div style={{ fontSize: 12, marginTop: 6 }}>Las inspecciones apareceran en el mapa cuando sean registradas.</div>
             </div>
           ) : (() => {
-            const conCoords = inspecciones.filter(i => i.lat && i.lng);
+            const conCoords = inspecciones.filter((i: any) => i.lat && i.lng);
             if (conCoords.length === 0) return (
               <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 48, textAlign: "center" as const, color: MUTED }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>📍</div>
                 <div>Ninguna inspeccion tiene coordenadas GPS.</div>
               </div>
             );
-
-            // Fixed viewbox covering Caracas, La Guaira, Los Teques
             const minLat = 10.25, maxLat = 10.70, minLng = -67.15, maxLng = -66.45;
             const W = 800, H = 500;
-
             const colorMap: Record<string, string> = {
-              "Habitable": "#22c55e",
-              "Precaucion": "#fbbf24",
-              "Acceso Restringido": "#f97316",
-              "Inhabitable": "#ef4444"
+              "Habitable": "#22c55e", "Precaucion": "#fbbf24",
+              "Acceso Restringido": "#f97316", "Inhabitable": "#ef4444"
             };
-
             return (
               <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, overflow: "hidden" }}>
                 <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
@@ -1047,13 +1022,8 @@ export default function App() {
                   </defs>
                   <rect width={W} height={H} fill="#f8fafc" />
                   <rect width={W} height={H} fill="url(#mapgrid)" />
-
-                  {/* Coastline */}
-                  <path d="M 0 88 Q 150 68 310 72 Q 420 70 500 80 Q 650 85 800 75"
-                    fill="none" stroke="#bfdbfe" strokeWidth="2" strokeDasharray="6 3" opacity="0.8" />
+                  <path d="M 0 88 Q 150 68 310 72 Q 420 70 500 80 Q 650 85 800 75" fill="none" stroke="#bfdbfe" strokeWidth="2" strokeDasharray="6 3" opacity="0.8" />
                   <text x="12" y="60" fill="#93c5fd" fontSize="11" opacity="0.9" fontStyle="italic">Mar Caribe</text>
-
-                  {/* City reference dots */}
                   {[
                     { nombre: "La Guaira", lat: 10.601, lng: -66.934 },
                     { nombre: "Caracas", lat: 10.480, lng: -66.903 },
@@ -1072,8 +1042,6 @@ export default function App() {
                       </g>
                     );
                   })}
-
-                  {/* Inspection dots */}
                   {conCoords.map((insp: any) => {
                     const p = { x: ((insp.lng - minLng) / (maxLng - minLng)) * W, y: H - ((insp.lat - minLat) / (maxLat - minLat)) * H };
                     const color = colorMap[insp.veredicto] || "#94a3b8";
@@ -1084,7 +1052,6 @@ export default function App() {
                       </g>
                     );
                   })}
-
                   <text x={W - 8} y={H - 8} textAnchor="end" fontSize="9" fill="#94a3b8">BITE-UCV · Venezuela 2026</text>
                 </svg>
               </div>
