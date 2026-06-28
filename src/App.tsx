@@ -652,6 +652,7 @@ export default function App() {
   const [online, setOnline] = useState(navigator.onLine);
   const [queueCount, setQueueCount] = useState(getQueue().length);
   const [syncing, setSyncing] = useState(false);
+  const [mostrarTerminos, setMostrarTerminos] = useState(false);
   const [accesoDatos, setAccesoDatos] = useState(() => sessionStorage.getItem("bite_access") === "true");
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState(false);
@@ -806,12 +807,7 @@ export default function App() {
                 Acceder
               </button>
             </div>
-            <div style={{ marginTop: 24, padding: 12, background: "#f8fafc", borderRadius: 8, border: `1px solid ${BORDER}` }}>
-              <div style={{ fontSize: 11, color: MUTED, textAlign: "center" as const }}>
-                Para solicitar acceso contacta a:<br />
-                <strong style={{ color: TEXT }}>Paula Lima — Infraestructura de datos</strong>
-              </div>
-            </div>
+
           </div>
         ) : cargando
           ? <div style={{ textAlign: "center" as const, padding: 60, color: MUTED }}><div style={{ fontSize: 32 }}>⏳</div><div style={{ marginTop: 12 }}>Cargando datos...</div></div>
@@ -1140,6 +1136,68 @@ export default function App() {
         </div>
         ))
       }
+      {/* Terms modal */}
+      {mostrarTerminos && (
+        <>
+          <div onClick={() => setMostrarTerminos(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 200 }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 201, background: CARD, borderRadius: 16, padding: 24, width: "90%", maxWidth: 480, maxHeight: "80vh", overflowY: "auto" as const, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: TEXT, margin: "0 0 4px" }}>Terminos y Condiciones</h2>
+            <div style={{ fontSize: 11, color: MUTED, marginBottom: 16 }}>BITE-UCV · Paula Lima · Venezuela 2026</div>
+            
+            <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.6, display: "flex", flexDirection: "column" as const, gap: 12 }}>
+              <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: 12 }}>
+                <div style={{ fontWeight: 700, color: BLUE, marginBottom: 4 }}>Proposito</div>
+                <div style={{ color: MUTED }}>Esta herramienta fue creada sin fines de lucro, como aporte voluntario para apoyar la respuesta al sismo del 24 de junio de 2026 en Venezuela. Su unico objetivo es facilitar la evaluacion tecnica de estructuras y contribuir a la proteccion de vidas humanas.</div>
+              </div>
+
+              <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 8, padding: 12 }}>
+                <div style={{ fontWeight: 700, color: "#6d28d9", marginBottom: 4 }}>Neutralidad politica</div>
+                <div style={{ color: MUTED }}>Esta herramienta no tiene fines politicos, partidistas ni ideologicos de ningun tipo. Fue construida por y para los ciudadanos venezolanos, independientemente de su afiliacion politica, religion, origen o condicion social. El unico criterio que nos guia es la seguridad y el bienestar de las familias afectadas. Los datos recopilados no seran utilizados con fines electorales, de control poblacional ni de ningun otro proposito que no sea la respuesta humanitaria al desastre.</div>
+              </div>
+
+              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: 12 }}>
+                <div style={{ fontWeight: 700, color: "#15803d", marginBottom: 4 }}>Uso de los datos</div>
+                <div style={{ color: MUTED }}>La informacion registrada en esta aplicacion — inspecciones, ubicaciones y resultados tecnicos — sera utilizada exclusivamente para fines de evaluacion estructural y coordinacion de respuesta humanitaria. No sera vendida, comercializada ni cedida a terceros con fines distintos a la proteccion civil y la seguridad de las familias afectadas.</div>
+              </div>
+
+              <div style={{ background: "#fefce8", border: "1px solid #fef08a", borderRadius: 8, padding: 12 }}>
+                <div style={{ fontWeight: 700, color: "#854d0e", marginBottom: 4 }}>Privacidad</div>
+                <div style={{ color: MUTED }}>Los datos personales de los habitantes (nombre, cedula, telefono) son recopilados unicamente para facilitar el seguimiento de la inspeccion y el contacto en caso de ser necesario. El acceso a los datos agregados esta restringido al equipo tecnico autorizado.</div>
+              </div>
+
+              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: 12 }}>
+                <div style={{ fontWeight: 700, color: "#991b1b", marginBottom: 4 }}>Limitacion de responsabilidad</div>
+                <div style={{ color: MUTED }}>Esta herramienta es un apoyo tecnico para ingenieros calificados. El diagnostico final es responsabilidad del ingeniero inspector. Los desarrolladores no asumen responsabilidad legal por decisiones tomadas con base en los reportes generados.</div>
+              </div>
+
+              <div style={{ background: "#f8fafc", border: `1px solid ${BORDER}`, borderRadius: 8, padding: 12 }}>
+                <div style={{ fontWeight: 700, color: TEXT, marginBottom: 4 }}>Creditos</div>
+                <div style={{ color: MUTED }}>
+                  <strong>Instrumento de inspeccion:</strong> Brigada de Inspeccion Tecnica Estructural - UCV (BITE-UCV)<br />
+                  Ing. JefV & Ing. RmsV, 2026<br /><br />
+                  <strong>Desarrollo e infraestructura de datos:</strong> Paula Lima<br />
+                  Ingenieria de datos<br /><br />
+                  Herramienta de codigo abierto. Libre para usar, adaptar y redistribuir con fines humanitarios.
+                </div>
+              </div>
+            </div>
+
+            <button onClick={() => setMostrarTerminos(false)}
+              style={{ marginTop: 20, width: "100%", background: BLUE, border: "none", borderRadius: 8, color: "#fff", padding: "12px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+              Entendido
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Terms link above bottom nav */}
+      <div style={{ textAlign: "center" as const, padding: "8px 0 4px" }}>
+        <button onClick={() => setMostrarTerminos(true)}
+          style={{ background: "none", border: "none", color: MUTED, fontSize: 11, cursor: "pointer", textDecoration: "underline" }}>
+          Terminos y condiciones · Uso sin fines de lucro
+        </button>
+      </div>
+
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: CARD, borderTop: `1px solid ${BORDER}`, boxShadow: "0 -1px 8px rgba(0,0,0,0.06)", display: "flex", zIndex: 100 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => handleTab(t.id)}
