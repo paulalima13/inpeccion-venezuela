@@ -52,7 +52,7 @@ async function generarPDF(form: FormData, veredicto: string) {
   doc.setFont("helvetica", "normal");
   const msgs: Record<string, string> = {
     "Habitable": "Estructura con desempeno elastico adecuado. Inmueble seguro.",
-    "Precaucion": "Danos en mamposterua. Precaucion ante caida de objetos.",
+    "Precaucion": "Danos en mamposteria. Precaucion ante caida de objetos.",
     "Acceso Restringido": "Riesgo estructural moderado. Solo personal autorizado.",
     "Inhabitable": "Falla estructural severa. EVACUACION OBLIGATORIA."
   };
@@ -180,7 +180,7 @@ async function generarPDF(form: FormData, veredicto: string) {
   y = Math.max(s3bend, s3bY+6) + 2;
 
   // 4. MAMPOSTERIA
-  section("4. ANALISIS PATOLOGICO DE MAMPOSTERUA");
+  section("4. ANALISIS PATOLOGICO DE MAMPOSTERIA");
   field("Morfologia de grieta", form.morfologia_grieta, M, half);
   field("Ancho grieta (mm)", form.ancho_grieta_mm || "0", M + half, half / 2);
   y += 8;
@@ -740,7 +740,7 @@ export default function App() {
   const handleTab = (t: string) => { setTab(t); if (t === "dashboard" || t === "mapa") cargar(); };
 
   const TABS = [{ id: "dashboard", label: "Metricas" }, { id: "mapa", label: "Mapa" }, { id: "form", label: "Nueva inspeccion" }];
-  const PASOS = ["Identificacion", "Ubicacion", "Estructura", "Mamposterua", "Servicios", "Fachadas", "Veredicto"];
+  const PASOS = ["Identificacion", "Ubicacion", "Estructura", "Mamposteria", "Servicios", "Fachadas", "Veredicto"];
 
   const VEREDICTOS = [
     { v: "Habitable", color: "#22c55e", desc: "Estructura segura para habitar" },
@@ -890,7 +890,7 @@ export default function App() {
               )}
 
               {paso === 4 && (
-                <Section num="4" title="Analisis Patologico de Mamposterua">
+                <Section num="4" title="Analisis Patologico de Mamposteria">
                   <Campo label="Morfologia de grieta" value={form.morfologia_grieta} onChange={set("morfologia_grieta")} opciones={["Ninguna / Capilar","Horizontal (Gravedad/Asentamiento)","Diagonal 45 (Corte/Sismo)","Vertical (Flexion)","Patron en X (Corte Severo)","Escalonada (Asentamiento)"]} />
                   <Campo label="Ancho de grieta (mm)" value={form.ancho_grieta_mm} onChange={set("ancho_grieta_mm")} type="number" placeholder="ej. 2.5" />
                   <Campo label="Tipo de muro" value={form.tipo_muro} onChange={set("tipo_muro")} opciones={["Tabique (Divisorio)","Muro de Carga / Estructural"]} />
@@ -924,7 +924,7 @@ export default function App() {
                     const autoColor = VC[auto] || "#888";
                     const msgs: Record<string, string> = {
                       "Habitable": "Su estructura muestra un desempeno elastico adecuado. Inmueble seguro.",
-                      "Precaucion": "Danos significativos en mamposterua. Precaucion ante caida de objetos.",
+                      "Precaucion": "Danos significativos en mamposteria. Precaucion ante caida de objetos.",
                       "Acceso Restringido": "Riesgo estructural moderado. Acceso restringido a personal autorizado.",
                       "Inhabitable": "Falla estructural severa o dano en cimientos. Riesgo inminente. EVACUACION OBLIGATORIA."
                     };
