@@ -769,29 +769,11 @@ export default function App() {
       </div>
 
       {tab === "dashboard" && (
-        !accesoDatos ? (
-          <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 32 }}>
-
-            <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-              <input
-                type="password"
-                value={passwordInput}
-                onChange={e => { setPasswordInput(e.target.value); setPasswordError(false); }}
-                onKeyDown={e => e.key === "Enter" && verificarPassword()}
-                placeholder=""
-                style={{ background: INPUT, border: `1px solid ${passwordError ? "#ef4444" : BORDER}`, borderRadius: 8, color: TEXT, padding: "12px", fontSize: 15, outline: "none" }}
-              />
-              <button onClick={verificarPassword}
-                style={{ background: BLUE, border: "none", borderRadius: 8, color: "#fff", padding: "12px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-                Acceder
-              </button>
-            </div>
-
-          </div>
-        ) : cargando
+        cargando
           ? <div style={{ textAlign: "center" as const, padding: 60, color: MUTED }}><div style={{ fontSize: 32 }}>⏳</div><div style={{ marginTop: 12 }}>Cargando datos...</div></div>
           : <Dashboard inspecciones={inspecciones} />
       )}
+
 
       {tab === "form" && (
         <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 16 }}>
