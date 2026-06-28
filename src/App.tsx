@@ -1138,7 +1138,8 @@ export default function App() {
             ))}
           </div>
         </div>
-      )}
+        ))
+      }
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: CARD, borderTop: `1px solid ${BORDER}`, boxShadow: "0 -1px 8px rgba(0,0,0,0.06)", display: "flex", zIndex: 100 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => handleTab(t.id)}
