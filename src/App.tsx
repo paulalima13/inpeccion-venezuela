@@ -38,7 +38,7 @@ async function generarPDF(form: FormData, veredicto: string) {
   doc.text("HOJA DE INSPECCION TECNICA", W / 2, 10, { align: "center" });
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.text("Ing. JefV & Ing. RmsV, 2026", W / 2, 17, { align: "center" });
+  doc.text("Brigada de Inspeccion Tecnica Estructural - UCV (BITE-UCV)", W / 2, 15, { align: "center" });
   y = 30;
 
   // Veredicto box
@@ -268,7 +268,7 @@ async function generarPDF(form: FormData, veredicto: string) {
   doc.setFontSize(7);
   doc.setTextColor(100, 100, 100);
   doc.text(`Fecha de inspeccion: ${fecha}`, M, y);
-  doc.text("Ing. JefV & Ing. RmsV, 2026", W - M, y, { align: "right" });
+  doc.text("BITE-UCV | Paula Lima — Infraestructura de datos", W - M, y, { align: "right" });
 
   // Save
   const filename = `inspeccion_${(form.urbanizacion || form.calle || "edificio").replace(/\s/g, "_")}_${fecha.replace(/\//g, "-")}.pdf`;
@@ -670,7 +670,7 @@ export default function App() {
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 3 }}>Venezuela - Junio 2026</div>
         <h1 style={{ fontSize: 20, fontWeight: 800, color: TEXT, margin: 0, lineHeight: 1.2 }}>Inspeccion Tecnica Estructural</h1>
-        <p style={{ color: MUTED, fontSize: 12, margin: "3px 0 8px" }}>Ing. JefV & Ing. RmsV - Sistema de evaluacion post-sismo</p>
+        <p style={{ color: MUTED, fontSize: 12, margin: "3px 0 8px" }}>BITE-UCV & Paula Lima — Infraestructura de datos</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
           {[{ color: "#22c55e", label: "Habitable" }, { color: "#fbbf24", label: "Precaucion" }, { color: "#f97316", label: "Acceso Restringido" }, { color: "#ef4444", label: "Inhabitable" }].map(v => (
             <div key={v.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -901,20 +901,9 @@ export default function App() {
               </div>
             );
 
-            const lats = conCoords.map(i => i.lat);
-            const lngs = conCoords.map(i => i.lng);
-            const minLat = Math.min(...lats) - 0.01;
-            const maxLat = Math.max(...lats) + 0.01;
-            const minLng = Math.min(...lngs) - 0.01;
-            const maxLng = Math.max(...lngs) + 0.01;
+            // Fixed viewbox covering Caracas, La Guaira, Los Teques
+            const minLat = 10.25, maxLat = 10.70, minLng = -67.15, maxLng = -66.45;
             const W = 800, H = 500;
-
-            function proyectar(lat: number, lng: number) {
-              return {
-                x: ((lng - minLng) / (maxLng - minLng)) * W,
-                y: H - ((lat - minLat) / (maxLat - minLat)) * H
-              };
-            }
 
             const colorMap: Record<string, string> = {
               "Habitable": "#22c55e",
@@ -934,9 +923,34 @@ export default function App() {
                   <rect width={W} height={H} fill="#f8fafc" />
                   <rect width={W} height={H} fill="url(#mapgrid)" />
 
+                  {/* Coastline */}
+                  <path d="M 0 88 Q 150 68 310 72 Q 420 70 500 80 Q 650 85 800 75"
+                    fill="none" stroke="#bfdbfe" strokeWidth="2" strokeDasharray="6 3" opacity="0.8" />
+                  <text x="12" y="60" fill="#93c5fd" fontSize="11" opacity="0.9" fontStyle="italic">Mar Caribe</text>
+
+                  {/* City reference dots */}
+                  {[
+                    { nombre: "La Guaira", lat: 10.601, lng: -66.934 },
+                    { nombre: "Caracas", lat: 10.480, lng: -66.903 },
+                    { nombre: "Los Teques", lat: 10.347, lng: -67.039 },
+                    { nombre: "Guarenas", lat: 10.467, lng: -66.536 },
+                    { nombre: "Maiquetia", lat: 10.596, lng: -66.978 },
+                    { nombre: "Macuto", lat: 10.614, lng: -66.894 },
+                    { nombre: "Carabelleda", lat: 10.621, lng: -66.861 },
+                  ].map((c: any) => {
+                    const px = ((c.lng - minLng) / (maxLng - minLng)) * W;
+                    const py = H - ((c.lat - minLat) / (maxLat - minLat)) * H;
+                    return (
+                      <g key={c.nombre}>
+                        <circle cx={px} cy={py} r={3} fill="#cbd5e1" />
+                        <text x={px + 5} y={py + 4} fill="#94a3b8" fontSize="9">{c.nombre}</text>
+                      </g>
+                    );
+                  })}
+
                   {/* Inspection dots */}
                   {conCoords.map((insp: any) => {
-                    const p = proyectar(insp.lat, insp.lng);
+                    const p = { x: ((insp.lng - minLng) / (maxLng - minLng)) * W, y: H - ((insp.lat - minLat) / (maxLat - minLat)) * H };
                     const color = colorMap[insp.veredicto] || "#94a3b8";
                     return (
                       <g key={insp.id}>
@@ -946,7 +960,7 @@ export default function App() {
                     );
                   })}
 
-                  <text x={W - 8} y={H - 8} textAnchor="end" fontSize="9" fill="#94a3b8">Zona afectada Venezuela</text>
+                  <text x={W - 8} y={H - 8} textAnchor="end" fontSize="9" fill="#94a3b8">BITE-UCV · Venezuela 2026</text>
                 </svg>
               </div>
             );
