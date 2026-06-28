@@ -653,22 +653,6 @@ export default function App() {
   const [queueCount, setQueueCount] = useState(getQueue().length);
   const [syncing, setSyncing] = useState(false);
   const [mostrarTerminos, setMostrarTerminos] = useState(false);
-  const [accesoDatos, setAccesoDatos] = useState(() => sessionStorage.getItem("bite_access") === "true");
-  const [passwordInput, setPasswordInput] = useState("");
-  const [passwordError, setPasswordError] = useState(false);
-  
-  const DATA_PASSWORD = "Vzlarenace26";
-  
-  function verificarPassword() {
-    if (passwordInput === DATA_PASSWORD) {
-      sessionStorage.setItem("bite_access", "true");
-      setAccesoDatos(true);
-      setPasswordError(false);
-    } else {
-      setPasswordError(true);
-      setPasswordInput("");
-    }
-  }
 
   const set = (key: keyof FormData) => (val: any) => setForm(f => ({ ...f, [key]: val }));
 
@@ -787,21 +771,16 @@ export default function App() {
       {tab === "dashboard" && (
         !accesoDatos ? (
           <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 32 }}>
-            <div style={{ textAlign: "center" as const, marginBottom: 24 }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>🔒</div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: TEXT, margin: "0 0 6px" }}>Acceso restringido</h2>
-              <p style={{ fontSize: 13, color: MUTED, margin: 0 }}>Las metricas y datos agregados son solo para el equipo BITE-UCV.</p>
-            </div>
+
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
               <input
                 type="password"
                 value={passwordInput}
                 onChange={e => { setPasswordInput(e.target.value); setPasswordError(false); }}
                 onKeyDown={e => e.key === "Enter" && verificarPassword()}
-                placeholder="Contrasena de acceso"
+                placeholder=""
                 style={{ background: INPUT, border: `1px solid ${passwordError ? "#ef4444" : BORDER}`, borderRadius: 8, color: TEXT, padding: "12px", fontSize: 15, outline: "none" }}
               />
-              {passwordError && <div style={{ fontSize: 12, color: "#ef4444" }}>Contrasena incorrecta. Contacta a Paula Lima.</div>}
               <button onClick={verificarPassword}
                 style={{ background: BLUE, border: "none", borderRadius: 8, color: "#fff", padding: "12px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
                 Acceder
@@ -997,21 +976,16 @@ export default function App() {
       {tab === "mapa" && (
         !accesoDatos ? (
           <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 32 }}>
-            <div style={{ textAlign: "center" as const, marginBottom: 24 }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>🔒</div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: TEXT, margin: "0 0 6px" }}>Acceso restringido</h2>
-              <p style={{ fontSize: 13, color: MUTED, margin: 0 }}>El mapa de inspecciones es solo para el equipo BITE-UCV.</p>
-            </div>
+
             <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
               <input
                 type="password"
                 value={passwordInput}
                 onChange={e => { setPasswordInput(e.target.value); setPasswordError(false); }}
                 onKeyDown={e => e.key === "Enter" && verificarPassword()}
-                placeholder="Contrasena de acceso"
+                placeholder=""
                 style={{ background: INPUT, border: `1px solid ${passwordError ? "#ef4444" : BORDER}`, borderRadius: 8, color: TEXT, padding: "12px", fontSize: 15, outline: "none" }}
               />
-              {passwordError && <div style={{ fontSize: 12, color: "#ef4444" }}>Contrasena incorrecta. Contacta a Paula Lima.</div>}
               <button onClick={verificarPassword}
                 style={{ background: BLUE, border: "none", borderRadius: 8, color: "#fff", padding: "12px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
                 Acceder
@@ -1134,8 +1108,7 @@ export default function App() {
             ))}
           </div>
         </div>
-        ))
-      }
+      )}
       {/* Terms modal */}
       {mostrarTerminos && (
         <>
