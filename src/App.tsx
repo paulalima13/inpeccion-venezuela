@@ -280,6 +280,43 @@ const SUPABASE_URL = "https://beguduormupycmwkfagg.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlZ3VkdW9ybXVweWNtd2tmYWdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1ODE2NDQsImV4cCI6MjA5ODE1NzY0NH0.81thnXTxZGkMbXwRqzx4_2kLOJqVOnsmXQCz9wTV5oo";
 const HEADERS = { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, "Content-Type": "application/json" };
 
+// ── Offline queue ────────────────────────────────────────────
+const QUEUE_KEY = "inspeccion_queue";
+
+function getQueue(): object[] {
+  try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); } catch { return []; }
+}
+
+function addToQueue(data: object) {
+  const q = getQueue();
+  q.push({ ...data, _queued_at: new Date().toISOString() });
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
+}
+
+function clearQueue() {
+  localStorage.setItem(QUEUE_KEY, "[]");
+}
+
+async function syncQueue() {
+  const q = getQueue();
+  if (q.length === 0) return 0;
+  let synced = 0;
+  const remaining = [];
+  for (const item of q) {
+    try {
+      const { _queued_at, ...data } = item as any;
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/inspecciones`, {
+        method: "POST", headers: { ...HEADERS, Prefer: "return=representation" }, body: JSON.stringify(data)
+      });
+      if (r.ok) synced++;
+      else remaining.push(item);
+    } catch { remaining.push(item); }
+  }
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
+  return synced;
+}
+// ─────────────────────────────────────────────────────────────
+
 async function dbInsert(data: object) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/inspecciones`, {
     method: "POST", headers: { ...HEADERS, Prefer: "return=representation" }, body: JSON.stringify(data)
@@ -612,6 +649,9 @@ export default function App() {
   const [enviado, setEnviado] = useState(false);
   const [inspecciones, setInspecciones] = useState<any[]>([]);
   const [cargando, setCargando] = useState(false);
+  const [online, setOnline] = useState(navigator.onLine);
+  const [queueCount, setQueueCount] = useState(getQueue().length);
+  const [syncing, setSyncing] = useState(false);
 
   const set = (key: keyof FormData) => (val: any) => setForm(f => ({ ...f, [key]: val }));
 
@@ -624,8 +664,7 @@ export default function App() {
   async function enviar() {
     if (!form.inspector || !form.tipo_edificacion || !form.veredicto) return;
     setEnviando(true);
-    try {
-      await dbInsert({
+    const payload = {
         inspector: form.inspector, tipo_edificacion: form.tipo_edificacion,
         nombre_habitante: form.nombre_habitante || null, cedula: form.cedula || null,
         telefono_contacto: form.telefono_contacto || null, condicion_habitante: form.condicion_habitante || null,
@@ -646,12 +685,41 @@ export default function App() {
         fachada_norte: form.fachada_norte || null, fachada_sur: form.fachada_sur || null,
         fachada_este: form.fachada_este || null, fachada_oeste: form.fachada_oeste || null,
         veredicto: form.veredicto, observaciones: form.observaciones || null
+    };
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/inspecciones`, {
+        method: "POST", headers: { ...HEADERS, Prefer: "return=representation" }, body: JSON.stringify(payload)
       });
-      setEnviado(true); setForm({ ...EMPTY_FORM }); setPaso(1); await cargar();
-      setTimeout(() => { setEnviado(false); setTab("dashboard"); }, 3000);
-    } catch (e) {}
+      if (!r.ok) throw new Error("Server error");
+      // Also try to sync any queued items
+      await syncQueue();
+    } catch {
+      // No signal — save to local queue
+      addToQueue(payload);
+    }
+    setEnviado(true); setForm({ ...EMPTY_FORM }); setPaso(1); await cargar();
+    setTimeout(() => { setEnviado(false); setTab("dashboard"); }, 3000);
     setEnviando(false);
   }
+
+  // Online/offline detection
+  useState(() => {
+    const goOnline = async () => {
+      setOnline(true);
+      const q = getQueue();
+      if (q.length > 0) {
+        setSyncing(true);
+        const synced = await syncQueue();
+        setQueueCount(getQueue().length);
+        setSyncing(false);
+        if (synced > 0) await cargar();
+      }
+    };
+    const goOffline = () => setOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => { window.removeEventListener("online", goOnline); window.removeEventListener("offline", goOffline); };
+  });
 
   const handleTab = (t: string) => { setTab(t); if (t === "dashboard" || t === "mapa") cargar(); };
 
@@ -671,6 +739,24 @@ export default function App() {
         <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 3 }}>Venezuela - Junio 2026</div>
         <h1 style={{ fontSize: 20, fontWeight: 800, color: TEXT, margin: 0, lineHeight: 1.2 }}>Inspeccion Tecnica Estructural</h1>
         <p style={{ color: MUTED, fontSize: 12, margin: "3px 0 8px" }}>BITE-UCV & Paula Lima — Infraestructura de datos</p>
+        {/* Online/offline status */}
+        {!online && (
+          <div style={{ background: "#fef3c7", border: "1px solid #fbbf24", borderRadius: 8, padding: "8px 12px", marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 14 }}>📵</span>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#92400e" }}>Sin conexion — modo offline</div>
+              <div style={{ fontSize: 11, color: "#92400e" }}>Las inspecciones se guardaran localmente y se enviaran cuando vuelva la senal.</div>
+            </div>
+          </div>
+        )}
+        {online && queueCount > 0 && (
+          <div style={{ background: "#eff6ff", border: "1px solid #2563eb", borderRadius: 8, padding: "8px 12px", marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 14 }}>{syncing ? "⏳" : "📶"}</span>
+            <div style={{ fontSize: 12, color: "#1e40af", fontWeight: 600 }}>
+              {syncing ? "Sincronizando inspecciones guardadas..." : `${queueCount} inspeccion(es) pendiente(s) de sincronizar`}
+            </div>
+          </div>
+        )}
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
           {[{ color: "#22c55e", label: "Habitable" }, { color: "#fbbf24", label: "Precaucion" }, { color: "#f97316", label: "Acceso Restringido" }, { color: "#ef4444", label: "Inhabitable" }].map(v => (
             <div key={v.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -854,10 +940,10 @@ export default function App() {
                   </button>
                 ) : (
                   <button
-                    onClick={async () => { await enviar(); if (form.veredicto && form.inspector) generarPDF(form, form.veredicto); }}
+                    onClick={async () => { await enviar(); setQueueCount(getQueue().length); if (form.veredicto && form.inspector) generarPDF(form, form.veredicto); }}
                     disabled={enviando || !form.inspector || !form.tipo_edificacion || !form.veredicto}
                     style={{ flex: 2, background: form.veredicto ? (VC[form.veredicto] || BLUE) : INPUT, border: "none", borderRadius: 10, color: form.veredicto ? "#fff" : MUTED, padding: "14px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
-                    {enviando ? "Guardando y generando PDF..." : "Guardar y generar PDF"}
+                    {enviando ? "Guardando..." : !online ? "Guardar offline + PDF" : "Guardar y generar PDF"}
                   </button>
                 )}
               </div>
